@@ -14,4 +14,4 @@
 - **Copy-paste commands:** All shell commands are complete, tested for accuracy, and can be copied directly.
 - **Troubleshooting sections added:** Common issues and simple fixes included in both guides.
 - **Two paths maintained:** Basic HTML blue/green setup, and advanced ASP.NET + GitHub Actions workflow.
-
+- **PAT creation walkthrough added:** Step 6A in aspnet guide now includes exact GitHub UI clicks, scope selection, security best practices, and safe stdin-based login method.
