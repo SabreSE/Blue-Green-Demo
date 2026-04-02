@@ -287,6 +287,12 @@ Or use the specific commit hash from GitHub Actions:
 ./deploy.sh ghcr.io/<YOUR_ORG>/titan-demo:sha-abc1234
 ```
 
+Validate the tag first (recommended):
+
+```bash
+gh api /users/<YOUR_ORG>/packages/container/titan-demo/versions --jq '.[].metadata.container.tags[]' | sort -u | grep '^sha-'
+```
+
 **What the deploy script does:**
 
 1. Checks which environment is currently live (Blue or Green)
@@ -415,9 +421,21 @@ sudo nginx -t
 If you see errors, the deploy script couldn't switch. Run manually:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/titan_active.inc
 sudo nginx -t
 sudo systemctl reload nginx
+```
+
+### "Image tag not found"
+
+**Symptom:** deploy fails immediately with `Image tag not found`.
+
+**Why this is good:** validation happens before pull/start/switch, so live traffic is untouched.
+
+**Fix:** list valid tags and redeploy with an exact `sha-*` tag:
+
+```bash
+gh api /users/<YOUR_ORG>/packages/container/titan-demo/versions --jq '.[].metadata.container.tags[]' | sort -u | grep '^sha-'
 ```
 
 ---
