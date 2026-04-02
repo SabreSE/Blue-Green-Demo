@@ -1,0 +1,53 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "Marvel Cinematic Universe",
+      "timestamp": "2026-04-02T11:21:22Z",
+      "reason": "User requested Avengers-based team"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2026-04-02-blue-green-demo-initial": {
+      "assignment_id": "2026-04-02-blue-green-demo-initial",
+      "timestamp": "2026-04-02T11:21:22Z",
+      "universe": "Marvel Cinematic Universe",
+      "members": [
+        {
+          "agent_id": "tony-stark",
+          "name": "Tony Stark",
+          "role": "Architect"
+        },
+        {
+          "agent_id": "natasha-romanoff",
+          "name": "Natasha Romanoff",
+          "role": "Docker Expert"
+        },
+        {
+          "agent_id": "vision",
+          "name": "Vision",
+          "role": "ASP.NET Expert"
+        },
+        {
+          "agent_id": "steve-rogers",
+          "name": "Steve Rogers",
+          "role": "GitHub Expert"
+        },
+        {
+          "agent_id": "bruce-banner",
+          "name": "Bruce Banner",
+          "role": "Documentation"
+        },
+        {
+          "agent_id": "scribe",
+          "name": "Scribe",
+          "role": "Session Logger"
+        },
+        {
+          "agent_id": "ralph",
+          "name": "Ralph",
+          "role": "Work Monitor"
+        }
+      ]
+    }
+  }
+}

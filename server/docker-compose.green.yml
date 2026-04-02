@@ -1,0 +1,13 @@
+services:
+  app:
+    image: ${TITAN_IMAGE}
+    container_name: titan-demo-green
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      DEPLOY_COLOR: green
+      IMAGE_TAG: ${IMAGE_TAG}
+      COMMIT_SHA: ${COMMIT_SHA}
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
