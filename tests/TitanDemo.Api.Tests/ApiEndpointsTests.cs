@@ -26,7 +26,7 @@ public class ApiEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task Root_ReturnsTitanDemoPayload()
     {
         using var client = _factory.CreateClient();
-        var payload = await client.GetFromJsonAsync<RootResponse>("/");
+        var payload = await client.GetFromJsonAsync<RootResponse>("/api");
 
         Assert.NotNull(payload);
         Assert.Equal("Titan Demo API", payload!.Message);

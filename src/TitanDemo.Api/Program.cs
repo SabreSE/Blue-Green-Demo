@@ -1,9 +1,13 @@
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddRazorPages();
+
 var app = builder.Build();
 
-app.MapGet("/", () =>
+app.UseStaticFiles();
+
+app.MapGet("/api", () =>
 {
     var color = Environment.GetEnvironmentVariable("DEPLOY_COLOR") ?? "unknown";
     return Results.Json(new
@@ -32,6 +36,8 @@ app.MapGet("/info", () =>
         color
     });
 });
+
+app.MapRazorPages();
 
 app.Run();
 
