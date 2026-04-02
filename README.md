@@ -236,7 +236,7 @@ Now we tell Nginx: "All traffic goes to Blue for now."
 Create a file that Nginx reads to know which environment is live:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/titan_active.inc
 ```
 
 Create Nginx's routing configuration:
@@ -248,7 +248,7 @@ server {
     server_name _;
 
     location / {
-        include /etc/nginx/conf.d/titan_active.conf;
+        include /etc/nginx/titan_active.inc;
         proxy_pass $titan_upstream;
 
         proxy_set_header Host $host;
@@ -298,7 +298,7 @@ This is the magic moment. You're going to switch traffic to Green **without stop
 Switch to Green:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/titan_active.inc
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -314,7 +314,7 @@ curl http://localhost
 Switch back to Blue:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/titan_active.inc
 sudo nginx -t
 sudo systemctl reload nginx
 ```

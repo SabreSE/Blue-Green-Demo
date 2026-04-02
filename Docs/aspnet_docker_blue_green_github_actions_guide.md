@@ -415,7 +415,7 @@ sudo nginx -t
 If you see errors, the deploy script couldn't switch. Run manually:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/titan_active.inc
 sudo nginx -t
 sudo systemctl reload nginx
 ```
