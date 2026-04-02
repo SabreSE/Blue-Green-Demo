@@ -1,0 +1,66 @@
+@page
+@model TitanDemo.Api.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var badgeClass = Model.Color.ToLowerInvariant() switch
+    {
+        "blue" => "bg-primary",
+        "green" => "bg-success",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="p-4 p-md-5 rounded-4 hero-card text-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">Titan Blue/Green Deployment Demo</h1>
+                    <p class="lead mb-0">A clean UI for deployment status and runtime metadata.</p>
+                </div>
+                <span class="badge @badgeClass fs-6 px-3 py-2 text-uppercase">@Model.Color</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 card-title">Image Tag</h2>
+                <p class="display-6 mb-0 text-break">@Model.ImageTag</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 card-title">Commit SHA</h2>
+                <p class="display-6 mb-0 text-break">@Model.CommitSha</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 card-title">Service Version</h2>
+                <p class="display-6 mb-0 text-break">@Model.Version</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 card-title">Quick Links</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-primary" href="/health">/health</a>
+                    <a class="btn btn-outline-primary" href="/info">/info</a>
+                    <a class="btn btn-outline-primary" href="/api">/api</a>
+                </div>
+                <p class="text-muted mb-0 mt-3">Rendered at @Model.UtcNow.ToString("u")</p>
+            </div>
+        </div>
+    </div>
+</div>
