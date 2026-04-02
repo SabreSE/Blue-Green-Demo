@@ -1,0 +1,53 @@
+{
+  "agents": {
+    "tony-stark": {
+      "persistent_name": "Tony Stark",
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "natasha-romanoff": {
+      "persistent_name": "Natasha Romanoff",
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "vision": {
+      "persistent_name": "Vision",
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "steve-rogers": {
+      "persistent_name": "Steve Rogers",
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "bruce-banner": {
+      "persistent_name": "Bruce Banner",
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "scribe": {
+      "persistent_name": "Scribe",
+      "universe": "system",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "ralph": {
+      "persistent_name": "Ralph",
+      "universe": "system",
+      "created_at": "2026-04-02T11:21:22Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}
