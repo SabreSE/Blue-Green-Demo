@@ -1,17 +1,22 @@
 # ASP.NET Docker Blue/Green Deployment with GitHub Actions
 
-This guide shows how to automate deployments of a real ASP.NET app.
+This guide shows how to automate deployments of a real ASP.NET application with CI/CD.
 
-**Prerequisites:** Complete the basic setup guide first (README.md or `ubuntu_docker_blue_green_deployment_guide.md`).
+⚠️ **Important:** This is a **production deployment guide**, not the static HTML demo in README.md.
+
+**Prerequisites:** 
+- Complete the basic setup guide first (README.md or `ubuntu_docker_blue_green_deployment_guide.md`) to understand blue/green concepts
+- A GitHub account and a repository (this repo, or your own with a similar structure)
 
 ---
 
 ## What You'll Learn
 
-- How GitHub Actions builds your code automatically
+- How GitHub Actions builds your .NET code automatically
 - How to store Docker images in GitHub Container Registry (GHCR)
-- How to deploy those images using blue/green switching
+- How to deploy real app containers using blue/green switching
 - How to roll back a deployment
+- How to monitor deployments with health checks
 
 ---
 
@@ -34,6 +39,13 @@ This guide shows how to automate deployments of a real ASP.NET app.
               ↓
 8. Users see new version with zero downtime
 ```
+
+### Endpoints Used in This Process
+
+- **`/health`** — Deploy script polls this every 2 seconds (up to 30 attempts) to confirm app is ready
+- **`/api`** — JSON endpoint showing current color and timestamp (for manual verification)
+- **`/info`** — Full metadata including image tag and commit SHA (useful for rollback verification)
+- **`/`** — UI page (Razor) with visual confirmation of which version is live
 
 ---
 
@@ -61,20 +73,30 @@ The demo app has these key files:
 
 ## Step 1: What the ASP.NET App Does
 
-The app exposes three endpoints:
+The app exposes the following endpoints:
 
-| Endpoint | What it does |
-|----------|-------------|
-| `GET /` | Returns basic info (version, timestamp) |
-| `GET /health` | Returns `200 OK` if healthy (used to verify before switching) |
-| `GET /info` | Returns metadata (image tag, commit SHA, color) |
+| Endpoint | Method | Purpose | Response |
+|----------|--------|---------|----------|
+| `/` | GET | UI page (Razor) | HTML page with version and color info |
+| `/api` | GET | JSON API | JSON with message, color, and timestamp |
+| `/health` | GET | Health check | `{"status": "healthy"}` if app is running |
+| `/info` | GET | Full metadata | JSON with version, image tag, commit SHA, and color |
 
-You can test locally:
+You can test these locally:
 
 ```bash
 dotnet restore TitanDemo.slnx
 dotnet build TitanDemo.slnx -c Release
-dotnet test TitanDemo.slnx -c Release
+dotnet run --project src/TitanDemo.Api/TitanDemo.Api.csproj
+```
+
+Then in another terminal:
+
+```bash
+curl http://localhost:8080/
+curl http://localhost:8080/api
+curl http://localhost:8080/health
+curl http://localhost:8080/info
 ```
 
 ---
@@ -332,13 +354,13 @@ You should see the new version info.
 
 ## Step 8: Verify the Deployment
 
-Check which version is live:
+Check which version is live with the `/info` endpoint:
 
 ```bash
 curl http://localhost/info
 ```
 
-You should see:
+You should see JSON like:
 
 ```json
 {
@@ -349,6 +371,38 @@ You should see:
   "commitSha": "abc1234..."
 }
 ```
+
+Also verify the API endpoint:
+
+```bash
+curl http://localhost/api
+```
+
+Response:
+
+```json
+{
+  "message": "Titan Demo API",
+  "color": "green",
+  "utc": "2024-04-15T10:30:00.000Z"
+}
+```
+
+And check health is passing:
+
+```bash
+curl http://localhost/health
+```
+
+Response:
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+The `color` field tells you which environment is live (blue or green).
 
 ---
 
@@ -384,62 +438,108 @@ This deploys the previous known-good version to the inactive environment, tests 
 
 ## Troubleshooting
 
+### Troubleshooting Matrix
+
+| Symptom | Root Cause | Solution |
+|---------|-----------|----------|
+| `docker pull` fails with "permission denied" | GHCR authentication not set up | Run Step 6B. If package is private, verify PAT is correct: `echo $TOKEN \| docker login ghcr.io -u <USERNAME> --password-stdin` |
+| `docker pull` succeeds but `docker run` fails immediately | Image doesn't exist for this platform or missing entrypoint | Check Dockerfile is in repo root, run a test build: `docker build -t titan-demo:test .` |
+| Deploy script says "Health check failed" | App container started but `/health` endpoint not responding | Check logs: `docker logs titan-demo-blue` or `docker logs titan-demo-green`. Verify environment variables (ASPNETCORE_URLS, DEPLOY_COLOR) are set in docker-compose file |
+| `curl http://localhost/health` returns 404 or connection refused | Nginx is routing to wrong port OR app container isn't running | Check which port is active: `curl http://127.0.0.1:8081/health` and `curl http://127.0.0.1:8082/health`. One should work. If neither, verify containers are running: `docker ps -a \| grep titan-demo` |
+| `sudo nginx -t` fails with "bad variable name" | `/etc/nginx/titan_active.inc` has syntax error | Check file: `cat /etc/nginx/titan_active.inc` — should be exactly `set $titan_upstream http://127.0.0.1:8081;` (no trailing comments, proper semicolon) |
+| Switch succeeded but traffic still goes to old version | Nginx config reloaded but cached DNS/connections | Wait 10-15 seconds and try from a different terminal or machine, or hard-refresh browser cache |
+| Image pulled successfully but deploy says "Image tag not found" at start of deploy | `docker manifest inspect` failed (image exists locally but not in registry) | Verify image is pushed to GHCR: `gh api /users/<ORG>/packages/container/titan-demo/versions \| jq '.[].metadata.container.tags[]'`. If missing, check GitHub Actions completed successfully and image was pushed. |
+| Deploy script runs but `/health` endpoint returns 500 | App started but has internal error | Check application logs and configuration. Ensure required environment variables are passed in docker-compose file: `DEPLOY_COLOR`, `IMAGE_TAG`, `COMMIT_SHA` |
+
 ### "Cannot pull image: permission denied"
 
-**Solution:** Check GitHub authentication (Step 6). Is the package public or did you set up a PAT?
+**Reason:** GitHub authentication failed (package is private and no PAT, or PAT is wrong).
 
-```bash
-docker login ghcr.io
-```
-
-Try again.
+**Fix:**
+1. Check if package is public (GitHub > Packages > titan-demo > Visibility)
+2. If private, verify PAT: `echo $TOKEN | docker login ghcr.io -u <USERNAME> --password-stdin`
+3. Try pulling manually: `docker pull ghcr.io/<ORG>/titan-demo:latest`
+4. If it works, retry deploy
 
 ### "Health check failed"
 
-**Solution:** The app didn't start. Check the logs on the inactive environment:
+**Reason:** App container started but not responding to `/health`.
 
-```bash
-docker logs -f titan-demo-blue
-```
+**Steps to debug:**
 
-or
+1. Check if container is running:
+   ```bash
+   docker ps | grep titan-demo-blue
+   docker ps | grep titan-demo-green
+   ```
 
-```bash
-docker logs -f titan-demo-green
-```
+2. Check container logs:
+   ```bash
+   docker logs -f titan-demo-blue
+   ```
+   Look for errors like:
+   - Port conflicts (another process on 8080?)
+   - Missing environment variables
+   - App didn't start (compilation error?)
 
-Common causes:
-- Image doesn't exist or is wrong tag
-- App couldn't start (missing environment variables?)
-- Port conflicts
+3. Try connecting directly to the container port (not through Nginx):
+   ```bash
+   curl http://127.0.0.1:8081/health
+   curl http://127.0.0.1:8082/health
+   ```
+   If one responds, Nginx routing might be wrong.
+
+4. Check Nginx config:
+   ```bash
+   sudo nginx -t
+   cat /etc/nginx/titan_active.inc
+   ```
 
 ### "Nginx reload failed"
 
-**Solution:** Check Nginx config:
+**Reason:** Nginx config has a syntax error or permissions issue.
 
-```bash
-sudo nginx -t
-```
+**Steps to fix:**
 
-If you see errors, the deploy script couldn't switch. Run manually:
+1. Validate config:
+   ```bash
+   sudo nginx -t
+   ```
+   Output tells you exactly what's wrong.
 
-```bash
-echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/titan_active.inc
-sudo nginx -t
-sudo systemctl reload nginx
-```
+2. Check the active file:
+   ```bash
+   cat /etc/nginx/titan_active.inc
+   ```
+   Should be: `set $titan_upstream http://127.0.0.1:8081;` or `8082;`
 
-### "Image tag not found"
+3. Fix manually if needed:
+   ```bash
+   echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/titan_active.inc
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
 
-**Symptom:** deploy fails immediately with `Image tag not found`.
+### "Image tag not found" at deployment start
 
-**Why this is good:** validation happens before pull/start/switch, so live traffic is untouched.
+**Reason:** Validation caught the tag doesn't exist in GHCR before any traffic switch.
 
-**Fix:** list valid tags and redeploy with an exact `sha-*` tag:
+**Why this is good:** Live traffic is untouched and safe.
 
-```bash
-gh api /users/<YOUR_ORG>/packages/container/titan-demo/versions --jq '.[].metadata.container.tags[]' | sort -u | grep '^sha-'
-```
+**Fix:**
+
+1. List valid tags:
+   ```bash
+   gh api /users/<ORG>/packages/container/titan-demo/versions \
+     --jq '.[].metadata.container.tags[]' | sort -u | grep '^sha-'
+   ```
+
+2. Deploy with a valid `sha-*` tag:
+   ```bash
+   ./deploy.sh ghcr.io/<ORG>/titan-demo:sha-abc1234
+   ```
+
+3. For the `:latest` tag, ensure GitHub Actions pushed it to main branch (not feature branches)
 
 ---
 

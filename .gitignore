@@ -13,3 +13,10 @@
 **/bin/
 **/obj/
 **/TestResults/
+
+# Visual Studio local workspace/user files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
