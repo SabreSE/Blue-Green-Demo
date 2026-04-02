@@ -18,7 +18,7 @@ COMMIT_SHA="$IMAGE_TAG"
 
 BLUE_UPSTREAM="http://127.0.0.1:8081"
 GREEN_UPSTREAM="http://127.0.0.1:8082"
-ACTIVE_FILE="/etc/nginx/conf.d/titan_active.conf"
+ACTIVE_FILE="/etc/nginx/titan_active.inc"
 
 if [[ -f "$ACTIVE_FILE" ]] && grep -q "8081" "$ACTIVE_FILE"; then
   ACTIVE="blue"

@@ -270,7 +270,7 @@ curl http://localhost:8082
 Create a file that stores which environment is active:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/titan_active.inc
 ```
 
 Create Nginx site configuration:
@@ -282,7 +282,7 @@ server {
     server_name _;
 
     location / {
-        include /etc/nginx/conf.d/titan_active.conf;
+        include /etc/nginx/titan_active.inc;
         proxy_pass $titan_upstream;
 
         proxy_set_header Host $host;
@@ -324,7 +324,7 @@ curl http://localhost
 Switch traffic to Green:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8082;" | sudo tee /etc/nginx/titan_active.inc
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -338,7 +338,7 @@ curl http://localhost
 Switch back to Blue:
 
 ```bash
-echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/conf.d/titan_active.conf
+echo "set \$titan_upstream http://127.0.0.1:8081;" | sudo tee /etc/nginx/titan_active.inc
 sudo nginx -t
 sudo systemctl reload nginx
 ```
