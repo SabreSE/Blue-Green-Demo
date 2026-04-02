@@ -13,6 +13,16 @@ if [[ "$IMAGE" != *:* ]]; then
   exit 1
 fi
 
+if ! docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+  IMAGE_REPO="${IMAGE%:*}"
+  OWNER="$(echo "$IMAGE_REPO" | awk -F/ '{print $2}')"
+  echo "Image tag not found: $IMAGE"
+  echo "This deploy was stopped before any traffic switch."
+  echo "List valid sha tags with:"
+  echo "  gh api /users/${OWNER}/packages/container/titan-demo/versions --jq '.[].metadata.container.tags[]' | sort -u | grep '^sha-'"
+  exit 1
+fi
+
 IMAGE_TAG="${IMAGE##*:}"
 COMMIT_SHA="$IMAGE_TAG"
 
