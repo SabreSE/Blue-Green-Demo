@@ -18,6 +18,13 @@ A simple, hands-on guide to zero-downtime deployments using Docker and Nginx.
 
 ---
 
+This repo has **two valid paths**:
+1. **Beginner static demo (this page):** Nginx containers with simple HTML pages on blue/green.
+2. **Production ASP.NET flow:** Real app image from GHCR with `deploy.sh`.
+
+If you want the real app deployment path, go to:
+`Docs/aspnet_docker_blue_green_github_actions_guide.md`
+
 ## Quick Start (For Beginners)
 
 Start here if you're new to deployments. This takes ~30 minutes on a fresh Ubuntu server.
@@ -385,12 +392,26 @@ A: Once this feels comfortable, see "Advanced Topics" below.
 
 ---
 
+## Troubleshooting Matrix (Quick Fixes)
+
+| Error you see | What it means | Fix |
+|---|---|---|
+| `invalid number of arguments in "proxy_pass"` | Nginx site config has a malformed `proxy_pass` line | Check `/etc/nginx/sites-available/titan-demo` and use `proxy_pass $titan_upstream;` exactly, then run `sudo nginx -t` |
+| Image tag not found / pull fails | Tag does not exist in GHCR | List valid tags first and redeploy with a real `sha-*` tag (see ASP.NET guide) |
+| `Health check failed on <blue|green>` | New container did not become healthy | Check container logs (`docker logs -f titan-demo-blue` or `docker logs -f titan-demo-green`) and fix startup errors before switching traffic |
+
+---
+
 ## 📚 Advanced Topics
 
 This walkthrough uses a **static HTML demo** to teach the blue/green concept. For a **real ASP.NET application** with automated deployments:
 
 - **ASP.NET app + GitHub Actions:** See `Docs/aspnet_docker_blue_green_github_actions_guide.md`
 - **Detailed setup reference:** See `Docs/ubuntu_docker_blue_green_deployment_guide.md`
+- **ASP.NET endpoint expectations:** `/` (UI), `/api` (JSON payload), `/health`, `/info`
+- **Adding HTTPS (SSL/TLS)**
+- **Adding health checks**
+- **Automating deployments with scripts**
 
 ---
 

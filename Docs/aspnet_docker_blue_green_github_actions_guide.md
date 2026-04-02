@@ -342,6 +342,8 @@ Deployment complete!
 Test the app:
 
 ```bash
+curl http://localhost/
+curl http://localhost/api
 curl http://localhost/info
 curl http://localhost/health
 ```
@@ -364,9 +366,9 @@ You should see JSON like:
 {
   "service": "TitanDemo.Api",
   "version": "1.0.0.0",
+  "color": "green",
   "imageTag": "sha-abc1234",
-  "commitSha": "abc1234",
-  "color": "green"
+  "commitSha": "abc1234..."
 }
 ```
 
