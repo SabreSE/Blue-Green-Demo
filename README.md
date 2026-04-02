@@ -2,6 +2,22 @@
 
 A simple, hands-on guide to zero-downtime deployments using Docker and Nginx.
 
+## 📖 Choose Your Path
+
+### For Learning (Recommended Start)
+**This README** walks through blue/green concepts using a **static HTML demo** on a fresh Ubuntu server (~30 minutes).
+- Good for: Understanding how blue/green switching works
+- Uses: Docker, Nginx, static HTML
+- No ASP.NET knowledge required
+
+### For Production (ASP.NET Application)
+**See `Docs/aspnet_docker_blue_green_github_actions_guide.md`** for automated deployments of a real .NET app.
+- Good for: Deploying actual code with CI/CD
+- Uses: GitHub Actions, GHCR, ASP.NET Core, automated testing
+- Prerequisites: Complete this README first for concepts
+
+---
+
 ## Quick Start (For Beginners)
 
 Start here if you're new to deployments. This takes ~30 minutes on a fresh Ubuntu server.
@@ -371,10 +387,21 @@ A: Once this feels comfortable, see "Advanced Topics" below.
 
 ## 📚 Advanced Topics
 
-Once you're comfortable with the basics:
+This walkthrough uses a **static HTML demo** to teach the blue/green concept. For a **real ASP.NET application** with automated deployments:
 
-- **ASP.NET app + automated builds:** See `Docs/aspnet_docker_blue_green_github_actions_guide.md`
+- **ASP.NET app + GitHub Actions:** See `Docs/aspnet_docker_blue_green_github_actions_guide.md`
 - **Detailed setup reference:** See `Docs/ubuntu_docker_blue_green_deployment_guide.md`
-- **Adding HTTPS (SSL/TLS)**
-- **Adding health checks**
-- **Automating deployments with scripts**
+
+---
+
+## ⚠️ Troubleshooting
+
+### Static HTML Demo Issues
+
+| Problem | What to check | Fix |
+|---------|---------------|-----|
+| `curl http://localhost` returns error | Nginx not running | `sudo systemctl status nginx` — if stopped, run `sudo systemctl start nginx` |
+| Nginx is running but I see "Connection refused" | Blue or Green container not running | `docker compose -f /opt/titan-demo/blue/docker-compose.yml ps` — if stopped, run `docker compose -f /opt/titan-demo/blue/docker-compose.yml up -d` |
+| Switch not working (still see Blue after switching to Green) | Nginx didn't reload | Run `sudo systemctl reload nginx` and test again |
+| `nginx -t` says "test failed" | Nginx config has syntax error | Check `/etc/nginx/sites-available/titan-demo` for typos in `proxy_pass` — should be `proxy_pass $titan_upstream;` (exact format) |
+| Changed `/etc/nginx/titan_active.inc` but no effect | File permissions or Nginx didn't reload | Run `sudo nginx -t` first, then `sudo systemctl reload nginx` |
